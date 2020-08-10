@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo project</title>
+    <style>
+        body {
+            font-family: Trebuchet MS, Arial, sans-serif;
+            font-size: 16px;
+            background-color: #dcdcdc;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin: 0;
+            padding: 20px 40px;
+        }
+
+        .container {
+            width: 1000px;
+            margin: auto;
+            background-color: #ffffff;
+        }
+
+        .container .group {
+            padding: 20px 40px;
+        }
+
+        .container .group.grey {
+            background-color: #f5f5f5;
+        }
+
+        .container #error-message {
+            color: #cc0000;
+        }
+    </style>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function(){
+            let uploadingForm = document.forms['uploading-form'];
+            let errorBlock = document.getElementById('error-message');
+            let addedItemsBlock = document.getElementById('added-items');
+            uploadingForm.addEventListener('submit', async function(event) {
+                errorBlock.innerText = '';
+                event.preventDefault();
+                event.stopPropagation();
+                let formData = new FormData(this);
+                let response = await fetch('/api/store_file/', {
+                    method: 'POST',
+                    body: formData
+                });
+                if(response.ok) {
+                    let jsonResponse = await response.json();
+                    if(jsonResponse.status === 'ok') {
+                        let itemAddress = jsonResponse.result;
+                        addedItemsBlock.innerHTML =
+                            addedItemsBlock.innerHTML
+                            + '<a href="/api/get_file/?id=' + itemAddress.id + '&volume_id=' + itemAddress.volumeId + '">'
+                            + 'Get added file'
+                            + '</a> (ID: ' + itemAddress.id + ', volume: ' + itemAddress.volumeId + ')'
+                            + '<br />';
+                    } else {
+                        errorBlock.innerText = jsonResponse['reason'];
+                    }
+                }
+                return false;
+            });
+        });
+
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Demo Application &mdash; Blob Storage</h1>
+        <form action="#" method="post" enctype="multipart/form-data" name="uploading-form">
+            <div class="group">
+                Choose the file to store. Only images (JPG, GIF and PNG) and text files are allowed with default settings.
+            </div>
+            <div class="group grey">
+                <input type="file" name="file_to_store" id="file_to_store">
+            </div>
+            <div class="group">
+                <input type="submit" value="Store file">
+            </div>
+            <div class="group" id="added-items"></div>
+            <div class="group" id="error-message"></div>
+        </form>
+
+    </div>
+</body>
+</html>

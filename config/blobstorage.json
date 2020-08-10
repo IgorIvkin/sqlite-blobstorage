@@ -1,0 +1,15 @@
+{
+  "maxBlobVolumeSize": 40,
+
+  "maxBlobItemSize": 20,
+
+  "allowToCreateNewVolumes": true,
+
+  "allowedMimeTypes": [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "text/plain"
+  ]
+}

@@ -23,6 +23,14 @@ is able to use available space again.
 * You are provided by a very simple RESTful API to store and get the file. Consider this API
 as learning example mostly. It is recommended to expand and adapt the code to your needs.
 
+### Configurable values
+Configuration file is a JSON-file located in `config\blobstorage.json`.
+* `maxBlobVolumeSize` &mdash; a maximal blob volume size in **megabytes**. Once blob volume reaches this
+limitation then new blob volume will be created;
+* `maxBlobItemSize` - a maximal size of file is possible to store in **megabytes**, the bigger file will be rejected;
+* `allowToCreateNewVolumes` - if `true` allows to create new volumes when `maxBlobVolumeSize` hits its limit;
+* `allowedMimeTypes` - an array of allowed mime-types, all the other mime-types will be rejected.
+
 ### TODOs
 The project was written primarily to validate the hypothesis. While it's applicable
 there is a lot of things to improve.

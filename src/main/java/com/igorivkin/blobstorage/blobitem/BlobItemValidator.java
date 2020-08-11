@@ -1,6 +1,6 @@
 package com.igorivkin.blobstorage.blobitem;
 
-import com.igorivkin.blobstorage.exceptions.GenericDatabaseException;
+import com.igorivkin.blobstorage.exceptions.GenericBlobStorageException;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -23,18 +23,11 @@ public class BlobItemValidator {
      * Validates a given item to be corresponding to our restrictions.
      * @param item item to validate
      * @return true if item is ok
-     * @throws GenericDatabaseException the validator will crush in case item is bad
+     * @throws GenericBlobStorageException the validator will crush in case item is bad
      */
-    public boolean validate(BlobItem item) throws GenericDatabaseException {
+    public boolean validate(BlobItem item) throws GenericBlobStorageException {
         if(!BlobItemValidator.allowedStatuses.contains(item.getStatus())) {
-            throw new GenericDatabaseException(MessageFormat.format("Status {0} is not allowed for the item", item.getStatus()));
-        }
-
-        String mimeType = item.getMimeType();
-        if(mimeType.length() < 2 || mimeType.length() > 255) {
-            throw new GenericDatabaseException(MessageFormat.format("Mime type {0} is not allowed for the item, length should be between 2 and 255 characters",
-                                                                    mimeType)
-            );
+            throw new GenericBlobStorageException(MessageFormat.format("Status {0} is not allowed for the item", item.getStatus()));
         }
         return true;
     }

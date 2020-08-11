@@ -5,10 +5,7 @@ import com.igorivkin.blobstorage.blobitem.BlobItemStatus;
 import com.igorivkin.blobstorage.blobitem.BlobStoredItemAddress;
 import com.igorivkin.blobstorage.blobvolume.BlobVolume;
 import com.igorivkin.blobstorage.blobstorage.config.BlobStorageConfigProvider;
-import com.igorivkin.blobstorage.exceptions.GenericBlobStorageException;
-import com.igorivkin.blobstorage.exceptions.GenericDatabaseException;
-import com.igorivkin.blobstorage.exceptions.NoSuchBlobVolumeException;
-import com.igorivkin.blobstorage.exceptions.TooBigItemException;
+import com.igorivkin.blobstorage.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,10 +34,9 @@ public class BlobStorage {
      * @throws IOException it attempts to analyze file system
      * @throws GenericBlobStorageException it checks for the incoming params and available blob volumes
      * @throws SQLException it attempts to insert data to sqlite database
-     * @throws GenericDatabaseException it attempts to use JDBC to prepare and execute the statement
      */
     public BlobStoredItemAddress storeItem(InputStream itemBinaryStream, String mimeType)
-            throws IOException, GenericBlobStorageException, SQLException, GenericDatabaseException {
+            throws IOException, GenericBlobStorageException, SQLException {
 
         this.checkMimeType(mimeType);
 
@@ -50,13 +46,11 @@ public class BlobStorage {
         itemToStore.setStatus(BlobItemStatus.COMMITTED);
         itemToStore.setContent(itemBinaryStream.readAllBytes());
 
-        // It seems to be inefficient to prepare the item object
-        // before to check for the size but actually there is no
-        // reliable way to know the size of stream than to read all of
-        // it. Method .available() is very unreliable and officially
-        // not recommended to use in such a context.
+        // It seems to be inefficient to prepare the item object before to check for the size but actually there is no
+        // reliable way to know the size of stream than to read all of it. Method .available() is very unreliable and
+        // officially not recommended to use in such a context.
         int sizeOfItem = itemToStore.getContent().length;
-        this.checkBlobItemSize(sizeOfItem);
+        this.checkBlobItemSize(itemToStore.getContent().length);
 
         BlobVolume suitableBlobVolume = this.getSuitableBlobVolume(sizeOfItem);
         if (suitableBlobVolume == null) {
@@ -138,6 +132,10 @@ public class BlobStorage {
                 break;
             }
         }
+
+        // This code can look suspect but read it carefully. We want to return null
+        // in case if no suitable File object is found else we will extract corresponding
+        // BlobVolume object.
         if(suitableDatabaseVolume == null) {
             return null;
         }
@@ -152,13 +150,21 @@ public class BlobStorage {
      */
     private void checkMimeType(String mimeType) throws GenericBlobStorageException {
         if (mimeType == null) {
-            throw new GenericBlobStorageException("Mime type should be defined to store the item");
+            throw new IncorrectMimeTypeException("Mime type should be defined to store the item");
         }
         if (mimeType.equals("")) {
-            throw new GenericBlobStorageException("Empty mime type is not allowed to store the item");
+            throw new IncorrectMimeTypeException("Empty mime type is not allowed to store the item");
         }
         if (!this.configProvider.getAllowedMimeTypes().contains(mimeType)) {
-            throw new GenericBlobStorageException(MessageFormat.format("This mime type is not allowed: {0}", mimeType));
+            throw new IncorrectMimeTypeException(MessageFormat.format("This mime type is not allowed: {0}", mimeType));
+        }
+        if(mimeType.length() < 2 || mimeType.length() > 255) {
+            throw new IncorrectMimeTypeException(
+                    MessageFormat.format(
+                            "Mime type {0} is not allowed for the item, length should be between 2 and 255 characters",
+                            mimeType
+                    )
+            );
         }
     }
 

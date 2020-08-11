@@ -3,7 +3,7 @@ package com.igorivkin.blobstorage.blobvolume;
 import com.igorivkin.blobstorage.blobitem.BlobStoredItemAddress;
 import com.igorivkin.blobstorage.database.ConnectionManager;
 import com.igorivkin.blobstorage.blobitem.BlobItem;
-import com.igorivkin.blobstorage.exceptions.GenericDatabaseException;
+import com.igorivkin.blobstorage.exceptions.GenericBlobStorageException;
 import com.igorivkin.blobstorage.blobitem.BlobItemValidator;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -86,9 +86,9 @@ public class BlobVolume {
      * @param item entity representing the file that need to be stored in blob storage
      * @return number of affected rows, normally 1
      * @throws SQLException it attempts to store data to SQL-database
-     * @throws GenericDatabaseException it attempts to validate data before the insert
+     * @throws GenericBlobStorageException it attempts to validate data before the insert
      */
-    public BlobStoredItemAddress insert(BlobItem item) throws SQLException, GenericDatabaseException {
+    public BlobStoredItemAddress insert(BlobItem item) throws SQLException, GenericBlobStorageException {
         if(this.blobItemValidator.validate(item)) {
             String sql = "INSERT INTO entities(mime_type, status, content) VALUES(?, ?, ?)";
             try (Connection connection = this.connectionManager.getConnection(this.getConnectionString())) {
@@ -104,12 +104,12 @@ public class BlobVolume {
                         storedItem.setVolumeId(this.getVolumeId());
                         return storedItem;
                     } else {
-                        throw new GenericDatabaseException("Cannot get generated key for an inserted item");
+                        throw new GenericBlobStorageException("Cannot get generated key for an inserted item");
                     }
                 }
             }
         } else {
-            return null;
+            throw new GenericBlobStorageException("Cannot store the item because validator returned false result");
         }
     }
 

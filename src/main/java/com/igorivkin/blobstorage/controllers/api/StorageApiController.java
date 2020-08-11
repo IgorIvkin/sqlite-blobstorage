@@ -51,7 +51,7 @@ public class StorageApiController {
                     MessageFormat.format("Unknown I/O error. Reason: {0}", exception.getMessage())
             );
         }
-        catch(GenericBlobStorageException | GenericDatabaseException | SQLException exception) {
+        catch(GenericBlobStorageException | SQLException exception) {
             return ResponseHelper.errorJsonResponse(
                     MessageFormat.format("An error was occurred while saving the file. Reason: {0}", exception.getMessage())
             );

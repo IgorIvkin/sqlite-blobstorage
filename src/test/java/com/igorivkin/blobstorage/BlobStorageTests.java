@@ -6,6 +6,7 @@ import com.igorivkin.blobstorage.blobitem.BlobStoredItemAddress;
 import com.igorivkin.blobstorage.blobvolume.BlobVolume;
 import com.igorivkin.blobstorage.exceptions.GenericBlobStorageException;
 import com.igorivkin.blobstorage.exceptions.GenericDatabaseException;
+import com.igorivkin.blobstorage.exceptions.IncorrectMimeTypeException;
 import com.igorivkin.blobstorage.exceptions.TooBigItemException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.Collections;
 
 // TODO: prepare dedicated config file for testing
 // at the moment it uses default config file and if the default values will be changed then tests could be failed
@@ -52,7 +54,7 @@ public class BlobStorageTests {
 
     @Test
     public void checkNotAllowedMimeType() {
-        Exception exception = assertThrows(GenericBlobStorageException.class, () -> {
+        Exception exception = assertThrows(IncorrectMimeTypeException.class, () -> {
             // Absolutely doesn't matter that data binary stream here is null,
             // the check for mime-type becomes before of the analyzing the content
             // so the code is expected to crush correctly.
@@ -78,5 +80,14 @@ public class BlobStorageTests {
             BlobStoredItemAddress storedItemAddress = blobStorage.storeItem(targetStream, "text/plain");
         });
         assertTrue(exception.getMessage().startsWith("Size to store is too big"));
+    }
+
+    @Test
+    public void checkTooLongMimeType() {
+        String veryLongMimeType = String.join("", Collections.nCopies(260, "n"));
+        Exception exception = assertThrows(IncorrectMimeTypeException.class, () -> {
+            blobStorage.storeItem(null, veryLongMimeType);
+        });
+        assertTrue(exception.getMessage().contains("length should be between 2 and 255 characters"));
     }
 }

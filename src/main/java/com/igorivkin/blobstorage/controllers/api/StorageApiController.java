@@ -29,7 +29,10 @@ public class StorageApiController {
         this.blobStorage = blobStorage;
     }
 
-    @PostMapping(value = "/store_file/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/store_file/",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<JsonResponse> processStoreFile(@RequestParam(name = "file_to_store") MultipartFile fileToStore) {
         try {
             BlobStoredItemAddress itemAddress = this.blobStorage.storeItem(fileToStore.getInputStream(), fileToStore.getContentType());
@@ -58,15 +61,16 @@ public class StorageApiController {
         }
     }
 
-    @GetMapping(value = "get_file", produces = {
-            MediaType.IMAGE_JPEG_VALUE,
-            MediaType.IMAGE_PNG_VALUE,
-            MediaType.IMAGE_GIF_VALUE,
-            MediaType.TEXT_PLAIN_VALUE
-    })
+    @GetMapping(
+            value = "get_file",
+            produces = {
+                MediaType.IMAGE_JPEG_VALUE,
+                MediaType.IMAGE_PNG_VALUE,
+                MediaType.IMAGE_GIF_VALUE,
+                MediaType.TEXT_PLAIN_VALUE
+            })
     public ResponseEntity<?> processGetFile(@RequestParam(name = "id") long id,
                                             @RequestParam(name = "volume_id") int volumeId) throws GenericBlobStorageException, SQLException {
-        // TODO: catch possible errors and exceptions here
         try {
             BlobItem item = this.blobStorage.getItem(id, volumeId);
             if(item != null) {
@@ -81,6 +85,25 @@ public class StorageApiController {
             // In case if "no such volume" exception occurred then it means we passed
             // wrong volume id in parameters. So just return 404.
             return new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(
+            method = {RequestMethod.GET, RequestMethod.POST},
+            value = "/delete_file/",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<JsonResponse> deleteFile(@RequestParam(name = "id") long id,
+                                                   @RequestParam(name = "volume_id") int volumeId) {
+        try {
+            this.blobStorage.deleteItem(id, volumeId);
+            return ResponseHelper.normalJsonResponse(
+                    "The item was successfully deleted"
+            );
+        } catch(GenericBlobStorageException | SQLException exception) {
+            return ResponseHelper.errorJsonResponse(
+                    MessageFormat.format("An error was occurred while deleting the file. Reason: {0}", exception.getMessage())
+            );
         }
     }
 }

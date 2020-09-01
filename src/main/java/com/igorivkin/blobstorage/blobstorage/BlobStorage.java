@@ -4,6 +4,7 @@ import com.igorivkin.blobstorage.blobitem.BlobItem;
 import com.igorivkin.blobstorage.blobitem.BlobStoredItemAddress;
 import com.igorivkin.blobstorage.blobvolume.BlobVolume;
 import com.igorivkin.blobstorage.exceptions.GenericBlobStorageException;
+import com.igorivkin.blobstorage.exceptions.NoSuchBlobVolumeException;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,6 +18,9 @@ public interface BlobStorage {
             throws IOException, SQLException, GenericBlobStorageException;
 
     BlobItem getItem(long id, int idVolume)
+            throws SQLException, GenericBlobStorageException;
+
+    void deleteItem(long id, int idVolume)
             throws SQLException, GenericBlobStorageException;
 
     BlobVolume createNewBlobVolume() throws SQLException;

@@ -20,7 +20,7 @@ is able to use available space again.
     1) ID of blob volume
     2) ID of item inside this volume
 * You have to store this information somewhere. Otherwise, you can't get your file!
-* You are provided by a very simple RESTful API to store and get the file. Consider this API
+* You are provided by a very simple RESTful API to store, delete and get the file. Consider this API
 as learning example mostly. It is recommended to expand and adapt the code to your needs.
 
 ### Configurable values
@@ -33,7 +33,7 @@ limitation then new blob volume will be created;
 
 ### TODOs
 The project was written primarily to validate the hypothesis. While it's applicable
-there is a lot of things to improve.
-1) add possibility to delete the stored file
-2) add more tests
-3) handle more exceptions and provide more consistent API
+currently there is a lot of things to improve.
+1) to make an API more consistent
+2) to add more detailed exceptions
+3) to implement the possibility to VACUUM blob volumes

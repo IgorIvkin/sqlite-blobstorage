@@ -90,4 +90,19 @@ public class BlobStorageTests {
         });
         assertTrue(exception.getMessage().contains("length should be between 2 and 255 characters"));
     }
+
+    @Test
+    public void checkDeleteItem() throws GenericBlobStorageException, SQLException, IOException {
+        byte[] itemToStore = new byte[400];
+        InputStream targetStream = new ByteArrayInputStream(itemToStore);
+        BlobStoredItemAddress storedItemAddress = blobStorage.storeItem(targetStream, "text/plain");
+        assertTrue(storedItemAddress.getId() != 0 && storedItemAddress.getVolumeId() != 0);
+
+        // Now delete the item that was just added
+        blobStorage.deleteItem(storedItemAddress.getId(), storedItemAddress.getVolumeId());
+
+        // Now try to get deleted item and it should be null normally
+        BlobItem expectedlyDeletedItem = blobStorage.getItem(storedItemAddress.getId(), storedItemAddress.getVolumeId());
+        assertNull(expectedlyDeletedItem);
+    }
 }

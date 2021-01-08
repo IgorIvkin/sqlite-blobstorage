@@ -24,7 +24,7 @@ public class BlobStorageConfigProvider {
     private String databasePath;
 
     /**
-     * Generic config that are initialized from the file config/blobstorage.json.
+     * Generic config that is initialized from the file config/blobstorage.json.
      */
     private BlobStorageConfig blobStorageConfig;
 
@@ -34,7 +34,7 @@ public class BlobStorageConfigProvider {
     private List<File> databaseVolumes;
 
     /**
-     * Map of blob volumes presented by their corresponding BlobVolume-objects.
+     * Map of the blob volumes presented by their corresponding BlobVolume-objects.
      */
     private Map<String, BlobVolume> blobVolumes;
 

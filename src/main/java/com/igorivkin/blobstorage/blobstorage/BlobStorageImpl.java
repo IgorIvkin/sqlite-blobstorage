@@ -51,7 +51,7 @@ public class BlobStorageImpl implements BlobStorage {
         // reliable way to know the size of stream than to read all of it. Method .available() is very unreliable and
         // officially not recommended to use in such a context.
         int sizeOfItem = itemToStore.getContent().length;
-        this.checkBlobItemSize(itemToStore.getContent().length);
+        this.checkBlobItemSize(sizeOfItem);
 
         BlobVolume suitableBlobVolume = this.getSuitableBlobVolume(sizeOfItem);
         if (suitableBlobVolume == null) {
@@ -151,20 +151,20 @@ public class BlobStorageImpl implements BlobStorage {
         // Scroll all the existing volumes and returns the one that has enough space to
         // store the entity. Return null if no such volumes are presented.
         File suitableDatabaseVolume = null;
-        for (File databaseVolume : this.configProvider.getDatabaseVolumes()) {
-            if(databaseVolume.length() + desiredSpace <= this.configProvider.getMaxBlobVolumeSizeInBytes()) {
-                suitableDatabaseVolume = databaseVolume;
-                break;
+        synchronized (this) {
+            for (File databaseVolume : this.configProvider.getDatabaseVolumes()) {
+                if (databaseVolume.length() + desiredSpace <= this.configProvider.getMaxBlobVolumeSizeInBytes()) {
+                    suitableDatabaseVolume = databaseVolume;
+                    break;
+                }
             }
         }
 
-        // This code can look suspect but read it carefully. We want to return null
-        // in case if no suitable File object is found else we will extract corresponding
-        // BlobVolume object.
-        if(suitableDatabaseVolume == null) {
-            return null;
-        }
-        return this.configProvider.getBlobVolumes().get(suitableDatabaseVolume.getName());
+        // We want to return null in case if no suitable File object is found
+        // else we will extract corresponding BlobVolume object.
+        return suitableDatabaseVolume == null
+                ? null
+                : this.configProvider.getBlobVolumes().get(suitableDatabaseVolume.getName());
     }
 
     /**

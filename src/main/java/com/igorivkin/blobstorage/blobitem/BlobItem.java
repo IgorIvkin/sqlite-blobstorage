@@ -37,11 +37,11 @@ public class BlobItem {
     }
 
     public byte[] getContent() {
-        return content;
+        return Arrays.copyOf(content, content.length);
     }
 
     public void setContent(byte[] content) {
-        this.content = content;
+        this.content = (content != null ? Arrays.copyOf(content, content.length) : null);
     }
 
     @Override

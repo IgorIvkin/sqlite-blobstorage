@@ -12,6 +12,8 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Component
@@ -134,7 +136,7 @@ public class BlobStorageConfigProvider {
      */
     private void initializeBlobStorageConfig() throws IOException {
         Gson jsonConfig = new Gson();
-        try(JsonReader jsonReader = new JsonReader(new FileReader(this.blobStorageConfigPath))) {
+        try(JsonReader jsonReader = new JsonReader(new FileReader(this.blobStorageConfigPath, StandardCharsets.UTF_8 ))) {
             this.blobStorageConfig = jsonConfig.fromJson(jsonReader, BlobStorageConfig.class);
         }
     }

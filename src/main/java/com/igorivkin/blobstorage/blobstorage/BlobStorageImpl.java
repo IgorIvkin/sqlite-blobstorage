@@ -28,12 +28,13 @@ public class BlobStorageImpl implements BlobStorage {
     /**
      * Stores a given file (represented by InputStream to the blob storage
      * choosing a suitable blob volume for that operation.
+     *
      * @param itemBinaryStream input stream representing content of a given file
-     * @param mimeType mime-type of a given file
+     * @param mimeType         mime-type of a given file
      * @return ID of inserted entity
-     * @throws IOException it attempts to analyze file system
+     * @throws IOException                 it attempts to analyze file system
      * @throws GenericBlobStorageException it checks for the incoming params and available blob volumes
-     * @throws SQLException it attempts to insert data to sqlite database
+     * @throws SQLException                it attempts to insert data to sqlite database
      */
     @Override
     public BlobStoredItemAddress storeItem(InputStream itemBinaryStream, String mimeType)
@@ -78,50 +79,51 @@ public class BlobStorageImpl implements BlobStorage {
 
     /**
      * Returns a blob item by its given volume ID and ID inside volume.
-     * @param id ID of entity
+     *
+     * @param id       ID of entity
      * @param idVolume ID of volume
      * @return blob item
      * @throws GenericBlobStorageException it is possible that there will be no such blob volume
-     * @throws SQLException it attempts to perform select query
+     * @throws SQLException                it attempts to perform select query
      */
     @Override
     public BlobItem getItem(long id, int idVolume) throws GenericBlobStorageException, SQLException {
-        Optional<BlobVolume> suitableBlobVolume = this.configProvider.getBlobVolumes()
+        return configProvider.getBlobVolumes()
                 .values()
                 .stream()
                 .filter(blobVolume -> blobVolume.getVolumeId() == idVolume)
-                .findFirst();
-        if(suitableBlobVolume.isPresent()) {
-            return suitableBlobVolume.orElseThrow().getById(id);
-        } else {
-            throw new NoSuchBlobVolumeException(MessageFormat.format("There is no such blob volume with ID {0}", idVolume));
-        }
+                .findFirst()
+                .orElseThrow(() -> {
+                    throw new NoSuchBlobVolumeException(MessageFormat.format("There is no such blob volume with ID {0}", idVolume));
+                })
+                .getById(id);
     }
 
     /**
      * Deletes a blob item with a given ID and volume ID. Returns nothing normally.
-     * @param id ID of entity
+     *
+     * @param id       ID of entity
      * @param idVolume ID of volume
-     * @throws SQLException it attempts to perform delete SQL-query
+     * @throws SQLException                it attempts to perform delete SQL-query
      * @throws GenericBlobStorageException it is possible that there will be no such blob volume
      */
     @Override
     public void deleteItem(long id, int idVolume) throws SQLException, GenericBlobStorageException {
-        Optional<BlobVolume> suitableBlobVolume = this.configProvider.getBlobVolumes()
+        configProvider.getBlobVolumes()
                 .values()
                 .stream()
                 .filter(blobVolume -> blobVolume.getVolumeId() == idVolume)
-                .findFirst();
-        if(suitableBlobVolume.isPresent()) {
-            suitableBlobVolume.orElseThrow().delete(id);
-        } else {
-            throw new NoSuchBlobVolumeException(MessageFormat.format("There is no such blob volume with ID {0}", idVolume));
-        }
+                .findFirst()
+                .orElseThrow(() -> {
+                    throw new NoSuchBlobVolumeException(MessageFormat.format("There is no such blob volume with ID {0}", idVolume));
+                })
+                .delete(id);
     }
 
     /**
      * Creates a new blob volume calculating its new ID according
      * to the existing blob volumes.
+     *
      * @return new blob volume
      * @throws SQLException it will try to execute DDL query
      */
@@ -138,13 +140,14 @@ public class BlobStorageImpl implements BlobStorage {
     /**
      * Returns suitable database volume that has free space to store that
      * should be normally lesser than maximal blob volume size in bytes.
+     *
      * @param desiredSpace space of entity we want to store
      * @return a file of suitable database to store the entity
      */
     @Override
     public BlobVolume getSuitableBlobVolume(long desiredSpace) throws GenericBlobStorageException {
         // If there is no volumes at all then return null immediately
-        if(this.configProvider.getDatabaseVolumes().size() == 0) {
+        if (this.configProvider.getDatabaseVolumes().size() == 0) {
             return null;
         }
 
@@ -170,6 +173,7 @@ public class BlobStorageImpl implements BlobStorage {
     /**
      * Checks mime-type that it's not null, not empty and in allowed list of
      * mime-types.
+     *
      * @param mimeType mime-type to check
      * @throws GenericBlobStorageException it will crush if mime-type is not ok
      */
@@ -180,7 +184,7 @@ public class BlobStorageImpl implements BlobStorage {
         if (mimeType.equals("")) {
             throw new IncorrectMimeTypeException("Empty mime type is not allowed to store the item");
         }
-        if(mimeType.length() < 2 || mimeType.length() > 255) {
+        if (mimeType.length() < 2 || mimeType.length() > 255) {
             throw new IncorrectMimeTypeException(
                     MessageFormat.format(
                             "Mime type {0} is not allowed for the item, length should be between 2 and 255 characters",
@@ -196,6 +200,7 @@ public class BlobStorageImpl implements BlobStorage {
     /**
      * Checks a given size to be corresponding to max allowed size to store
      * blob item.
+     *
      * @param size size of item to store in bytes
      * @throws GenericBlobStorageException it will crush if size is not ok
      */
